@@ -1,0 +1,1 @@
+These scripts are only run once at the initial creation of the network. They deploy the genesis contracts and load the initial snapshot balances. If you just want to run a local node connecting to an existing network (adkgo testnet or mainnet), you will not need these scripts.
