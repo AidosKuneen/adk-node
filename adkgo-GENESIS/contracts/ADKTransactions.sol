@@ -44,6 +44,7 @@ contract ADKTransactions {
         meshTip = transactionHashSha3;
         transaction_trunk[transactionHashSha3] = transactionHashSha3;
         transaction_branch[transactionHashSha3] = transactionHashSha3;
+        tx_count = 0;
         // END Create genesis transaction
     }
 
@@ -59,7 +60,11 @@ contract ADKTransactions {
                                                                    // replaces events as this is faster
     mapping(bytes32 => uint32) public transactionhash_by_address_count;
     mapping(bytes32 => uint32) public transactionhash_by_bundle_count;
-
+    
+    mapping(uint256 => bytes32) public transaction_indexed_by_seq; // transaction sha3 indexed by their sequence/occurence
+    mapping(bytes32 => uint256) public transaction_index; // transaction sha3 indexed by their sequence/occurence (reversed)
+    uint256 public tx_count;
+    
     // mesh structure
     string baseTransaction; // always all '9'
     string baseTransactionHash; // always all '9'
@@ -134,6 +139,9 @@ contract ADKTransactions {
             require(bytes(transactions[tinfo.transactionSHA3]).length == 0 ,"TRANSACTION ALREADY PROCESSED");
             transactions[tinfo.transactionSHA3] = string(tinfo.data); // store transaction
             transaction_hashes[tinfo.transactionSHA3] = string(tinfo.trans_hash); // store transaction Hash
+            tx_count++;
+            transaction_indexed_by_seq[tx_count] = tinfo.transactionSHA3;
+            transaction_index[tinfo.transactionSHA3] = tx_count;
 
              // Trunk + Branch Handling
             // Build mesh structure: trunk and branch, just store for now, check later
