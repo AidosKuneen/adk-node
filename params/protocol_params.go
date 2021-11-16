@@ -35,6 +35,7 @@ const (
 	TxContractCreationGenesisAccount string = "0xD4F79609f8dc0d23598d9019745446CAA2A93eaa" // ADKGO GENESIS ACCOUNT - account that can do mesh transactions without GAS
 	TxAPIAccount string = "0x2B5f3EC809994eD4549d4305fCf430129Dd96A3D" // ADKGO API ACCOUNT - account that can do mesh transactions without GAS
 	TxADKMeshContract string = "0x533e5eE8429FCFdBe907408F38Ef91a77573CfD1" // ADKGO Mesh Contract
+	TxAGSClaimContract string = "0xdf61877BaB8B3789A41924fdDB01804cfAED3C55" // AGS Claim Contract
 
 	TxDataZeroGas         uint64 = 4     // Per byte of data attached to a transaction that equals zero. NOTE: Not payable on data of calls between transactions.
 	QuadCoeffDiv          uint64 = 512   // Divisor for the quadratic particle of the memory cost equation.

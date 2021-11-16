@@ -2,6 +2,7 @@
 pragma solidity >0.8.4;
 
 // ADKTransactions Contract for ADKGO - requires CURL Extended Version of EVM/AVM
+//import "contracts/AGSClaim.sol";
 
 interface ADKTokenInterface {
     function AZ9balanceOf(string memory _adkAddr) external view returns (uint256 balance);

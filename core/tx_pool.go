@@ -654,7 +654,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 
 	// API Account allowed to use 0 price GAS if contract is the Mesh Contract
 	if (tx.To() != nil) && (tx.Data() != nil) {
-		 // target is mesh contract and caller is the generic API account and
+		 // target is mesh contract or AGS claim contract and caller is the generic API account and
 		 // function call is postTransactions
 		 // and data has PoW completed
 
@@ -662,7 +662,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 
 		 postTransactionsFunctionHash := []byte("\x7f\xa5\xe2\x42")
 
-		 if (bytes.Compare(tx.To().Bytes(),common.HexToAddress(params.TxADKMeshContract).Bytes()) == 0 &&
+		 if (  ( bytes.Compare(tx.To().Bytes(),common.HexToAddress(params.TxAGSClaimContract).Bytes()) == 0 || bytes.Compare(tx.To().Bytes(),common.HexToAddress(params.TxADKMeshContract).Bytes()) == 0 ) &&
 		 		bytes.Compare(from.Bytes(),common.HexToAddress(params.TxAPIAccount).Bytes()) == 0 &&
 				len(tx.Data()) > 4 &&
 				bytes.Compare(postTransactionsFunctionHash,tx.Data()[0:4]) == 0 ){

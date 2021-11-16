@@ -153,23 +153,26 @@ func main() {
     if errC != nil {
       log.Fatalf("Error DeployADKToken: %s", errC)
     }
-    //vADKGASaddress, _ := c_ADKToken.ADKGASContract(nil)
+      vAGSClaimContract, _ := c_ADKToken.AGSClaimContract(nil)
 	  vADKTransactionsAddress, _ := c_ADKToken.ADKTransactionsContract(nil)
 
     for vADKTransactionsAddress.Hex() == "0x0000000000000000000000000000000000000000" {
 	   fmt.Println("waiting for contract to be mined...")
        time.Sleep(5 * time.Second)
        c_ADKToken , _ = NewADKToken(vADKTokenAddress, client)
-	   //vADKGASaddress, _ = c_ADKToken.ADKGASContract(nil)
+	   vAGSClaimContract, _ = c_ADKToken.AGSClaimContract(nil)
 	   vADKTransactionsAddress, _ = c_ADKToken.ADKTransactionsContract(nil)
 	}
      fmt.Println("Deployed ADKToken Contract as "+vADKTokenAddress.Hex())
-     //fmt.Println("Deployed ADKGAS Contract as "+vADKGASaddress.Hex())
+     fmt.Println("Deployed ADKGAS Contract as "+vAGSClaimContract.Hex())
      fmt.Println("Deployed ADKTransactions Contract as "+vADKTransactionsAddress.Hex())
 
      fmt.Println("setting genesis balances from mesh snapshot...")
 
      cADKTransactions , err := NewADKTransactions(vADKTransactionsAddress, client)
+	 
+	 cAGSContract , err := NewAGSClaim(vAGSClaimContract, client)
+	 
      t_opt := GetAuth(client)
      cntAddrs := len(addressToValueMap)
 
@@ -180,9 +183,11 @@ func main() {
 	 for idx < cntAddrs - cntAddrs % 10 { // bulk
 		addresses_bulk := ""
 		var _vals [10]*big.Int
+		var _vals_claim [10]*big.Int
 		for idx10 := 0; idx10 < 10; idx10++ {
 			addresses_bulk += addresses_as_array[idx]
 			_vals[idx10] = big.NewInt(addressToValueMap[addresses_as_array[idx]])
+			_vals_claim[idx10] = new(big.Int).Div(_vals[idx10], big.NewInt(10))  // div 10
 			fmt.Printf("Bulk Setting (%v/%v): %s %v\n", idx, cntAddrs, addresses_as_array[idx], _vals[idx10])
 			checkTotal.Add(checkTotal, _vals[idx10])
 			idx++
@@ -192,22 +197,39 @@ func main() {
 			log.Fatalf("Error Setting Balance: %s", errBal)
 		}
 		t_opt.Nonce.Add(t_opt.Nonce,big.NewInt(1))
+
+		// AGS
+		_ , errBal2 := cAGSContract.ADMSetClaimableAmountBulk(t_opt, addresses_bulk, _vals_claim[0], _vals_claim[1], _vals_claim[2], _vals_claim[3], _vals_claim[4], _vals_claim[5], _vals_claim[6], _vals_claim[7], _vals_claim[8], _vals_claim[9] )
+		if errBal2 != nil {
+			log.Fatalf("Error Setting AGS Claim Balance: %s", errBal2)
+		}
+		t_opt.Nonce.Add(t_opt.Nonce,big.NewInt(1))
 	 }
 
 	 for idx < cntAddrs  { // remaining non-bulk
 	    _bigIntVal := big.NewInt(addressToValueMap[addresses_as_array[idx]])
+		_bigIntValClaim := new(big.Int).Div(_bigIntVal, big.NewInt(10))  // div 10
 		fmt.Printf("Setting (%v/%v): %s %v\n", idx, cntAddrs, addresses_as_array[idx], _bigIntVal)
 		checkTotal.Add(checkTotal, _bigIntVal)
 		_ , errBal := cADKTransactions.ADMLoadADKBalances(t_opt, addresses_as_array[idx], _bigIntVal)
 		if errBal != nil {
 			log.Fatalf("Error Setting Balance: %s", errBal)
 		}
-		idx++
 		t_opt.Nonce.Add(t_opt.Nonce,big.NewInt(1))
+		
+		// AGS 
+		fmt.Printf("Setting AGS: %v\n", _bigIntValClaim)
+		_ , errBal2 := cAGSContract.ADMSetClaimableAmount(t_opt, addresses_as_array[idx], _bigIntValClaim)
+		if errBal2 != nil {
+			log.Fatalf("Error Setting AGS Balance: %s", errBal2)
+		}
+		t_opt.Nonce.Add(t_opt.Nonce,big.NewInt(1))
+		
+		idx++
+		
 	 }
 
 	 fmt.Print ("Balances loaded:",checkTotal)
-
 
      fmt.Print("completed")
 }
