@@ -1,4 +1,4 @@
-pragma solidity >0.8.4;
+    pragma solidity >0.8.4;
 
 import "contracts/ADKTransactions.sol";
 import "contracts/AGSClaim.sol";
@@ -321,7 +321,12 @@ contract ADKToken {
         }
     }
     
-    // utilBytesToAddress: Helper function to convert 20 bytes to a properly formated Ethereum address
+    // helper function just to show AGS balance (note not ADK)
+    function AGSBalanceOf (address _addr) public view returns (uint256 balance) {
+        return _addr.balance;
+    }
+    
+     // utilBytesToAddress: Helper function to convert 20 bytes to a properly formated Ethereum address
     
     function utilBytesToAddress(bytes memory bys) private pure returns (address addr) {
         require(bys.length == 20);

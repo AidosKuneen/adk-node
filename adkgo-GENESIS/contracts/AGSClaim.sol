@@ -29,8 +29,8 @@ constructor(
 
     uint256 public InitialAGSAmount;
     
-    event EventClaimed(address indexed addr, uint256 claimedAmount);
-    event EventClaimedAZ9(string indexed addrAZ9, uint256 claimedAmount);
+    event EventClaimed(address indexed addr, address _to, uint256 claimedAmount);
+    event EventClaimedAZ9(string indexed addrAZ9, address _to, uint256 claimedAmount);
 
     bool mutex_PostTransactions = false; // mutex to prevent reentry
     function PostTransactions(string memory transactiondata) public mod_requireAZ9(transactiondata) returns(string memory) {
@@ -52,6 +52,7 @@ constructor(
         string memory ags_address_AZ9; // initialize
         
         address claim_address; // initialize
+        string memory claim_address_AZ9; // initialize
         // process each transaction one by one
         for (uint32 transaction_idx = 0; transaction_idx < cnt_transactions; transaction_idx++){
 
@@ -89,7 +90,7 @@ constructor(
 
             if (transaction_idx==0){ //this is where to send the AGS to
                 s_bundle = string(tinfo.b_bundle);
-                require (compareStrings(substring(transactiondata,0,16),"CLAIMTRANSACTION"),"not a claim transcation");
+                require (compareStrings(substring(tinfo.data,0,16),"CLAIMTRANSACTION"),"not a claim transcation");
             }
             else {
                 require(compareStrings(s_bundle, string(tinfo.b_bundle)),"bundle not consistent"); // bundle has to be the same across all transactions
@@ -107,9 +108,9 @@ constructor(
             if (transaction_idx==1) {
                 // this is the claiming address
                 claim_address = ADKTokenInterface2(ADKTokenAddress).AZ9_TO_ADDR(tinfo.s_address);
-                tinfo.sig2_address = substring(transactiondata,tinfo.offset+2673+2187,tinfo.offset+2673+2268);
+                claim_address_AZ9 = substring(transactiondata,tinfo.offset+2673+2187,tinfo.offset+2673+2268);
                 
-                require (compareStrings(tinfo.s_address, tinfo.sig2_address),"2nd signature has invalid address"); // there must be at least one more transaction
+                require (compareStrings(tinfo.s_address, claim_address_AZ9),"2nd signature has invalid address"); // there must be at least one more transaction
                 tinfo.sigA = substring(transactiondata,2673,2673+2187);
                 tinfo.sigB = substring(transactiondata,2*2673,2*2673+2187);
 
@@ -130,12 +131,12 @@ constructor(
         // if we are here, the bundle itself is valid. // we can now transfer the AGS
         uint256 claimableAmount = claimable[claim_address];
         claimable[claim_address] = 0;
-        claimableAZ9[ags_address_AZ9] = 0;
+        claimableAZ9[claim_address_AZ9] = 0;
         
         require(claimableAmount>0,"Nothing to claim");
         ags_address.transfer(claimableAmount);
-        emit EventClaimed(claim_address, claimableAmount);
-        emit EventClaimedAZ9(ags_address_AZ9, claimableAmount);
+        emit EventClaimed(claim_address, ags_address, claimableAmount);
+        emit EventClaimedAZ9(claim_address_AZ9, ags_address, claimableAmount);
         
         mutex_PostTransactions = false; // end reentry check
         return s_hash; // bundle hash
@@ -146,7 +147,6 @@ constructor(
     struct TransactionInfoStruct {
           string s_address;
           string data; // transaction data
-          string sig2_address;
           string sigA;
           string sigB;
           bytes b_bundle;
@@ -201,6 +201,11 @@ constructor(
     function recoverAGS(uint256 _bal) public onlyGenesis {
         payable(msg.sender).transfer(_bal);
     }
+
+    function getAGSBalance() public view returns (uint256) {
+            return address(this).balance;
+    }
+    
 
     // this is used to fund the Airdrop initially
     fallback() external payable {}

@@ -179,15 +179,18 @@ func main() {
 	 idx := 0
 
 	 checkTotal := big.NewInt(0)
-
+	 big_1000000000 := big.NewInt(10)
+	 big_1000000000.Exp(big_1000000000,big.NewInt(9),nil)
+	
 	 for idx < cntAddrs - cntAddrs % 10 { // bulk
 		addresses_bulk := ""
 		var _vals [10]*big.Int
 		var _vals_claim [10]*big.Int
+	
 		for idx10 := 0; idx10 < 10; idx10++ {
 			addresses_bulk += addresses_as_array[idx]
 			_vals[idx10] = big.NewInt(addressToValueMap[addresses_as_array[idx]])
-			_vals_claim[idx10] = new(big.Int).Div(_vals[idx10], big.NewInt(10))  // div 10
+			_vals_claim[idx10] = new(big.Int).Mul(_vals[idx10],big_1000000000)  // add 10 zeros to convert to correct AGS, then divide by 10, hecne mul 9 zeros
 			fmt.Printf("Bulk Setting (%v/%v): %s %v\n", idx, cntAddrs, addresses_as_array[idx], _vals[idx10])
 			checkTotal.Add(checkTotal, _vals[idx10])
 			idx++
@@ -208,7 +211,8 @@ func main() {
 
 	 for idx < cntAddrs  { // remaining non-bulk
 	    _bigIntVal := big.NewInt(addressToValueMap[addresses_as_array[idx]])
-		_bigIntValClaim := new(big.Int).Div(_bigIntVal, big.NewInt(10))  // div 10
+		_bigIntValClaim := new(big.Int).Mul( _bigIntVal, big_1000000000)  // add 10 zeros to convert to correct AGS, then divide by 10, hecne mul 9 zeros
+			
 		fmt.Printf("Setting (%v/%v): %s %v\n", idx, cntAddrs, addresses_as_array[idx], _bigIntVal)
 		checkTotal.Add(checkTotal, _bigIntVal)
 		_ , errBal := cADKTransactions.ADMLoadADKBalances(t_opt, addresses_as_array[idx], _bigIntVal)
