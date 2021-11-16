@@ -202,6 +202,9 @@ constructor(
         payable(msg.sender).transfer(_bal);
     }
 
+    // this is used to fund the Airdrop initially
+    fallback() external payable {}
+
     // Checks if two strings are identical
     function compareStrings(string memory a, string memory b) internal pure returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
@@ -293,4 +296,6 @@ constructor(
         _;
     }
 
+    
+    
 }
