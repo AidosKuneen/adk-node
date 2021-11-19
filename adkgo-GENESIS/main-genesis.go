@@ -156,7 +156,7 @@ func main() {
       vAGSClaimContract, _ := c_ADKToken.AGSClaimContract(nil)
 	  vADKTransactionsAddress, _ := c_ADKToken.ADKTransactionsContract(nil)
 
-    for vADKTransactionsAddress.Hex() == "0x0000000000000000000000000000000000000000" {
+    for vADKTransactionsAddress.Hex() == "0x0000000000000000000000000000000000000000" || vAGSClaimContract.Hex() == "0x0000000000000000000000000000000000000000" {
 	   fmt.Println("waiting for contract to be mined...")
        time.Sleep(5 * time.Second)
        c_ADKToken , _ = NewADKToken(vADKTokenAddress, client)
