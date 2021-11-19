@@ -2,15 +2,6 @@
 
 Official Golang implementation of the ADK Mesh protocol with Smart Contract funtionality
 
-## PLEASE NOTE (11/NOV/2021):
-THIS DOCUMENT AND THE FINAL RELEASE CANDIDATE FOR THE ADK MAINNET v2 RELEASE IS UNDER DEVELOPMENT BY THE CORE AIDOS TEAM, PLEASE CHECK BACK LATER FOR A STATUS UPDATE.
-
-<ul>
-  <li> PLEASE NOTE: This is still an ALPHA release and MAINNET V2 is not yet live! Currently the MAINNET V2 instance is a clone of the actual live V1 ADK mainnet from Oct 10th, and is used primarily for migration testing in preparation for the actual Mainnet migration, which is scheduled to happen around Nov 20th, 2021 </li>
-  <li> At this stage, please only use if you are part of the testing team and have been instructed to use this version. </li>
-</ul>
-
-
 ## BASE NODE SETUP STEPS (on clean UBUNTU server)
 
 ### Install prerequisites  (git. build-essentials, go)
