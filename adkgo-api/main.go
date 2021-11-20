@@ -23,6 +23,7 @@ import (
     "strconv"
     "flag"
     "log"
+	"os"
     "io/ioutil"
     "net/http"
     "runtime"
@@ -58,13 +59,21 @@ func getTimeDiff(ts int64) (int64){
 const defaultMilestone = "999999999999999999999999999999999999999999999999999999999999999999999999999999999"
 
 func processRequest(w http.ResponseWriter, r *http.Request){
-ts := makeTimestamp()
+  ts := makeTimestamp()
+  
+  debugLog := false
+  if _, errLL := os.Stat("log.enable"); errLL == nil {
+     // path/to/whatever exists
+	 debugLog = true
+  }
+  
   w.Header().Set("Content-Type", "application/json; charset=utf-8")
   w.Header().Set("Access-Control-Allow-Origin", "*")
   w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
   jsonBody, _ := ioutil.ReadAll(r.Body)
-  fmt.Println("Request:" + string(jsonBody))
-
+  if (debugLog) {
+     fmt.Println("Request:" + string(jsonBody))
+  }
   var ret []byte;
   var result map[string]interface{}
 
@@ -73,6 +82,9 @@ ts := makeTimestamp()
 
   if (result["command"] != nil){
       command := result["command"].(string);
+	  if (!debugLog) {
+		 fmt.Println("Request:" + command)
+	  }
       switch command {
         case "ping":{
           ip, _, _ := net.SplitHostPort(r.RemoteAddr)
@@ -258,7 +270,12 @@ ts := makeTimestamp()
           ret, code = errorResponse("missing command or invalid json");
     }
 
-    fmt.Println("Response:" + string(ret))
+	if (debugLog) {
+		  fmt.Println("Response:" + string(ret))
+    } else 
+	{
+	  fmt.Println("Response sent:", code)
+    }
     w.WriteHeader(code)
     w.Write(ret)
 }
