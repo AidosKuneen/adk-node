@@ -24,6 +24,7 @@ import (
     "flag"
     "log"
 	"os"
+	"github.com/AidosKuneen/gadk"
     "io/ioutil"
     "net/http"
     "runtime"
@@ -103,10 +104,6 @@ func processRequest(w http.ResponseWriter, r *http.Request){
           ret, code = errorResponse("attachToMesh not available on node, please do your own POW ;)");
         }
         case "interruptAttachingToMesh":{ // obsolete
-          response := &ResponseDurationOnly{Duration: getTimeDiff(ts)}
-          ret, _ = json.Marshal(response)
-        }
-        case "broadcastTransactions":{  // obsolete, is now automatic
           response := &ResponseDurationOnly{Duration: getTimeDiff(ts)}
           ret, _ = json.Marshal(response)
         }
@@ -243,6 +240,9 @@ func processRequest(w http.ResponseWriter, r *http.Request){
               ret, code = errorResponse("missing transaction hashes");
           }
         }
+		case "broadcastTransactions":  // obsolete, is now automatic //- ACTUALLY NO, aidosd (the old one uses this to store implicitly...
+          fallthrough
+        //
         case "storeTransactions":{
           if (result["trytes"] != nil){
             trytes := result["trytes"].([]interface{})
@@ -250,13 +250,28 @@ func processRequest(w http.ResponseWriter, r *http.Request){
             for _ , value := range trytes { // concatenate
               transactionTrytes = transactionTrytes + value.(string)
             }
-            _ , err := SendTransactions(nodeClient,transactionTrytes)
-            if (err != nil){
-               ret, code = errorResponse(err.Error());
-            } else {
-                response := &ResponseDurationOnly{Duration: getTimeDiff(ts)}
-                ret, _ = json.Marshal(response)
-            }
+			seen := false
+			if len(trytes) >= 1 {
+				hashTransaction1, errT := gadk.ToTrytes(trytes[0].(string))
+				if (errT != nil){
+				   //ignore and let the contract deal with it
+				} else {				
+					seen = HashExists(nodeClient, string(hashTransaction1.Hash()))
+					fmt.Println("Transactions already seen")
+				}
+			}
+			if seen { // we have done this one already...
+				response := &ResponseDurationOnly{Duration: getTimeDiff(ts)}
+				ret, _ = json.Marshal(response)
+			} else {
+				_ , err := SendTransactions(nodeClient,transactionTrytes)
+				if (err != nil){
+				   ret, code = errorResponse(err.Error());
+				} else {
+					response := &ResponseDurationOnly{Duration: getTimeDiff(ts)}
+					ret, _ = json.Marshal(response)
+				}
+			}
           }else {
               ret, code = errorResponse("missing transactions or tips keys");
           }
@@ -281,6 +296,7 @@ func processRequest(w http.ResponseWriter, r *http.Request){
 }
 
 func setupAPIHandler() *http.Server {
+	
     fmt.Println("Setting up API Handler")
 
 	srv := &http.Server{Addr: *apiServe}
