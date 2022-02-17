@@ -7,7 +7,7 @@ interface ADKTokenInterface2 {
     function AZ9_TO_ADDR (string memory adkString) external pure returns(address);
 }
 
-// Contract which allows claiming of AGS.
+// Contract which allows claiming of native ADK.
 
 contract AGSClaim {
 

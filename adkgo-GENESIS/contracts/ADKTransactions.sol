@@ -102,199 +102,200 @@ contract ADKTransactions {
     bool mutex_PostTransactions = false; // mutex to prevent reentry
     function PostTransactions(string memory transactiondata) public mod_requireAZ9(transactiondata) returns(string memory) {
 
-        // Check mutex
-        require (!mutex_PostTransactions,"reentry prevented!");
-        mutex_PostTransactions = true; // prevent reentry exploits
+        // // Check mutex
+        // require (!mutex_PostTransactions,"reentry prevented!");
+        // mutex_PostTransactions = true; // prevent reentry exploits
 
-        bytes memory b_trytes = bytes(transactiondata); // Load transaction AZ9 string into bytes
-        require(b_trytes.length % 2673 == 0 && b_trytes.length > 0 ,"Invalid transaction(s) length");
-        uint16 cnt_transactions = uint16(b_trytes.length / 2673);  // count number of included individual transactions
+        // bytes memory b_trytes = bytes(transactiondata); // Load transaction AZ9 string into bytes
+        // require(b_trytes.length % 2673 == 0 && b_trytes.length > 0 ,"Invalid transaction(s) length");
+        // uint16 cnt_transactions = uint16(b_trytes.length / 2673);  // count number of included individual transactions
 
-        bytes memory all_essential_parts = new bytes(cnt_transactions*162); // each essential is 162 char long, all essentials make the bundle hash
+        // bytes memory all_essential_parts = new bytes(cnt_transactions*162); // each essential is 162 char long, all essentials make the bundle hash
 
-        int totalBundleValue = 0; // has to be 0  (i.e. input and output values have to net 0)
-        int lastIndex = -1;         // initialize
-        string memory s_bundle = ""; // initialize
-        // process each transaction one by one
-        for (uint32 transaction_idx = 0; transaction_idx < cnt_transactions; transaction_idx++){
+        // int totalBundleValue = 0; // has to be 0  (i.e. input and output values have to net 0)
+        // int lastIndex = -1;         // initialize
+        // string memory s_bundle = ""; // initialize
+        // // process each transaction one by one
+        // for (uint32 transaction_idx = 0; transaction_idx < cnt_transactions; transaction_idx++){
 
-            TransactionInfoStruct memory tinfo; // will hold all key transaction data (also used to avoid stack errors due to too many variables)
-            tinfo.offset = transaction_idx * 2673; // offset of each transaction in the entire string
+        //     TransactionInfoStruct memory tinfo; // will hold all key transaction data (also used to avoid stack errors due to too many variables)
+        //     tinfo.offset = transaction_idx * 2673; // offset of each transaction in the entire string
 
-            tinfo.data = substring(transactiondata,tinfo.offset , tinfo.offset + 2673); // extract the current transaction
-            tinfo.trans_hash = bytes(CurlHashOP(tinfo.data));  // Call the Hash Operation in order to get the transaction hash
+        //     tinfo.data = substring(transactiondata,tinfo.offset , tinfo.offset + 2673); // extract the current transaction
+        //     tinfo.trans_hash = bytes(CurlHashOP(tinfo.data));  // Call the Hash Operation in order to get the transaction hash
 
-            // Validate PoW
-            // force the last X digits to be 0 (client POW); //
+        //     // Validate PoW
+        //     // force the last X digits to be 0 (client POW); //
 
-            for ( uint checkIdx = 0; checkIdx < ClientProofOfWorkRequirement/3; checkIdx ++ ){
-                uint byte_index = 80 - checkIdx;  // 80,79,78,.. integer division to get byte position to check
-                                                      // note we only check full bytes, not by trits. So difficulty can be e.g. ... , 9, 12, 15, 18, 21 ...
-                require(tinfo.trans_hash[byte_index] == 0x39, // 0x39 = "9",
-                        "TRANSACTION POW NOT COMPLETED"
-                        );
-            }
+        //     for ( uint checkIdx = 0; checkIdx < ClientProofOfWorkRequirement/3; checkIdx ++ ){
+        //         uint byte_index = 80 - checkIdx;  // 80,79,78,.. integer division to get byte position to check
+        //                                               // note we only check full bytes, not by trits. So difficulty can be e.g. ... , 9, 12, 15, 18, 21 ...
+        //         require(tinfo.trans_hash[byte_index] == 0x39, // 0x39 = "9",
+        //                 "TRANSACTION POW NOT COMPLETED"
+        //                 );
+        //     }
 
-            // Transaction Hash Handling
-            tinfo.transactionSHA3 = keccak256(tinfo.trans_hash); // get keccak hash of transaction hash for indexing
-            require(bytes(transactions[tinfo.transactionSHA3]).length == 0 ,"TRANSACTION ALREADY PROCESSED");
-            transactions[tinfo.transactionSHA3] = string(tinfo.data); // store transaction
-            transaction_hashes[tinfo.transactionSHA3] = string(tinfo.trans_hash); // store transaction Hash
-            tx_count++;
-            transaction_indexed_by_seq[tx_count] = tinfo.transactionSHA3;
-            transaction_index[tinfo.transactionSHA3] = tx_count;
+        //     // Transaction Hash Handling
+        //     tinfo.transactionSHA3 = keccak256(tinfo.trans_hash); // get keccak hash of transaction hash for indexing
+        //     require(bytes(transactions[tinfo.transactionSHA3]).length == 0 ,"TRANSACTION ALREADY PROCESSED");
+        //     transactions[tinfo.transactionSHA3] = string(tinfo.data); // store transaction
+        //     transaction_hashes[tinfo.transactionSHA3] = string(tinfo.trans_hash); // store transaction Hash
+        //     tx_count++;
+        //     transaction_indexed_by_seq[tx_count] = tinfo.transactionSHA3;
+        //     transaction_index[tinfo.transactionSHA3] = tx_count;
 
-             // Trunk + Branch Handling
-            // Build mesh structure: trunk and branch, just store for now, check later
-            transaction_trunk[tinfo.transactionSHA3] = keccak256(subbytes(b_trytes,uint32(tinfo.offset+2430),uint32(tinfo.offset+2430+81)));
-            transaction_branch[tinfo.transactionSHA3] = keccak256(subbytes(b_trytes,uint32(tinfo.offset+2511),uint32(tinfo.offset+2511+81)));
+        //      // Trunk + Branch Handling
+        //     // Build mesh structure: trunk and branch, just store for now, check later
+        //     transaction_trunk[tinfo.transactionSHA3] = keccak256(subbytes(b_trytes,uint32(tinfo.offset+2430),uint32(tinfo.offset+2430+81)));
+        //     transaction_branch[tinfo.transactionSHA3] = keccak256(subbytes(b_trytes,uint32(tinfo.offset+2511),uint32(tinfo.offset+2511+81)));
 
-            tmpSha3TransactionHashes[transaction_idx] = tinfo.transactionSHA3; // store for later consistency check
+        //     tmpSha3TransactionHashes[transaction_idx] = tinfo.transactionSHA3; // store for later consistency check
 
-            // record highest mesh tip
-            if (transaction_idx ==0) {
-                meshTip = tinfo.transactionSHA3; // becomes highest mesh tip
-            }
+        //     // record highest mesh tip
+        //     if (transaction_idx ==0) {
+        //         meshTip = tinfo.transactionSHA3; // becomes highest mesh tip
+        //     }
 
-            // Bundle Hash: recurd current transaction essential parts for later bundle hash generation
+        //     // Bundle Hash: recurd current transaction essential parts for later bundle hash generation
 
-            for (uint16 idx = 0; idx < 162; idx++){ // get essential parts for bunlde hash calculation
-                all_essential_parts[(transaction_idx*162) + idx] = b_trytes[tinfo.offset + 2187 + idx];
-            }
+        //     for (uint16 idx = 0; idx < 162; idx++){ // get essential parts for bunlde hash calculation
+        //         all_essential_parts[(transaction_idx*162) + idx] = b_trytes[tinfo.offset + 2187 + idx];
+        //     }
 
-            // Transaction Address Value Handling
+        //     // Transaction Address Value Handling
 
-            tinfo.s_address = substring(tinfo.data,2187,2268); // get current transaction address
-            testBundleBalances[tinfo.s_address] = 0; // set ot 0 for now, we will use this later to check sufficient balance availability
+        //     tinfo.s_address = substring(tinfo.data,2187,2268); // get current transaction address
+        //     testBundleBalances[tinfo.s_address] = 0; // set ot 0 for now, we will use this later to check sufficient balance availability
 
-            // Cummulative bundle value calculation up to current transaction (must be 0 after all transactions loaded, i.e. input total = output total)
-            tinfo.transactionValue = TryteToIntValue(subbytes(b_trytes,tinfo.offset+2268,tinfo.offset+2279));
-            totalBundleValue += tinfo.transactionValue;
+        //     // Cummulative bundle value calculation up to current transaction (must be 0 after all transactions loaded, i.e. input total = output total)
+        //     tinfo.transactionValue = TryteToIntValue(subbytes(b_trytes,tinfo.offset+2268,tinfo.offset+2279));
+        //     totalBundleValue += tinfo.transactionValue;
 
-            // just some additional checks, can never be too careful
-            require(tinfo.transactionValue >= -2500000000000000,"transaction value too low");
-            require(tinfo.transactionValue <= 2500000000000000,"transaction value too high");
-            require(totalBundleValue >= -2500000000000000,"bundle cummulative transaction value too low");
-            require(totalBundleValue <= 2500000000000000,"bundle cummulative transaction value too high");
+        //     // just some additional checks, can never be too careful
+        //     require(tinfo.transactionValue >= -2500000000000000,"transaction value too low");
+        //     require(tinfo.transactionValue <= 2500000000000000,"transaction value too high");
+        //     require(totalBundleValue >= -2500000000000000,"bundle cummulative transaction value too low");
+        //     require(totalBundleValue <= 2500000000000000,"bundle cummulative transaction value too high");
 
-            // Validate transaction index - current and total index (ensure transaction is in correct sequence)
+        //     // Validate transaction index - current and total index (ensure transaction is in correct sequence)
 
-            // check transaction indices
-            tinfo.b_lastIndex = subbytes(b_trytes,tinfo.offset+2340,tinfo.offset+2349);
-            tinfo.b_bundle = subbytes(b_trytes,tinfo.offset+2349,tinfo.offset+2349+81);
+        //     // check transaction indices
+        //     tinfo.b_lastIndex = subbytes(b_trytes,tinfo.offset+2340,tinfo.offset+2349);
+        //     tinfo.b_bundle = subbytes(b_trytes,tinfo.offset+2349,tinfo.offset+2349+81);
 
-            if (transaction_idx==0){
-                s_bundle = string(tinfo.b_bundle);
-                lastIndex = TryteToIntValue(tinfo.b_lastIndex);
-            }
-            else {
-                require(TryteToIntValue(tinfo.b_lastIndex) == lastIndex,"lastIndex not consistent"); // last index has to be the same across all transactions
-                require(compareStrings(s_bundle, string(tinfo.b_bundle)),"bundle not consistent"); // bundle has to be the same across all transactions
-            }
+        //     if (transaction_idx==0){
+        //         s_bundle = string(tinfo.b_bundle);
+        //         lastIndex = TryteToIntValue(tinfo.b_lastIndex);
+        //     }
+        //     else {
+        //         require(TryteToIntValue(tinfo.b_lastIndex) == lastIndex,"lastIndex not consistent"); // last index has to be the same across all transactions
+        //         require(compareStrings(s_bundle, string(tinfo.b_bundle)),"bundle not consistent"); // bundle has to be the same across all transactions
+        //     }
 
-            tinfo.b_currentIndex = subbytes(b_trytes,tinfo.offset+2331,tinfo.offset+2340);
-            tinfo.currentIndex = TryteToIntValue(tinfo.b_currentIndex);
+        //     tinfo.b_currentIndex = subbytes(b_trytes,tinfo.offset+2331,tinfo.offset+2340);
+        //     tinfo.currentIndex = TryteToIntValue(tinfo.b_currentIndex);
 
-            require(transaction_idx == uint(tinfo.currentIndex), "transaction sequence invalid"); // transaction number has to match index
+        //     require(transaction_idx == uint(tinfo.currentIndex), "transaction sequence invalid"); // transaction number has to match index
 
-            if (transaction_idx == cnt_transactions - 1){
-                require(transaction_idx == uint(lastIndex), "last transaction != lastIndex"); // transaction number has to match lastIndex for last transaction
-            }
+        //     if (transaction_idx == cnt_transactions - 1){
+        //         require(transaction_idx == uint(lastIndex), "last transaction != lastIndex"); // transaction number has to match lastIndex for last transaction
+        //     }
 
-            // SIGNATURE VALIDATIONS FOR SPENDING TRANSACTIONS ///////////////////////
-            // Check signature for spending transactions
+        //     // SIGNATURE VALIDATIONS FOR SPENDING TRANSACTIONS ///////////////////////
+        //     // Check signature for spending transactions
 
-            if (tinfo.transactionValue < 0){ // only need to check signatures for spending transactions
+        //     if (tinfo.transactionValue < 0){ // only need to check signatures for spending transactions
 
-                // Note: adkgo requires Signature Level 2, meaning the signature is spread across 2 transactions
+        //         // Note: adkgo requires Signature Level 2, meaning the signature is spread across 2 transactions
 
-                // the last transaction can't be a spending transaction, as each spending transaction has one more 0 value signature transaction
-                require (transaction_idx < uint(lastIndex),"missing 2nd signature"); // there must be at least one more transaction
+        //         // the last transaction can't be a spending transaction, as each spending transaction has one more 0 value signature transaction
+        //         require (transaction_idx < uint(lastIndex),"missing 2nd signature"); // there must be at least one more transaction
 
-                tinfo.sig2_address = substring(transactiondata,tinfo.offset+2673+2187,tinfo.offset+2673+2268);
-                tinfo.sig2_value = TryteToIntValue(subbytes(b_trytes,tinfo.offset+2673+2268,tinfo.offset+2673+2279));
+        //         tinfo.sig2_address = substring(transactiondata,tinfo.offset+2673+2187,tinfo.offset+2673+2268);
+        //         tinfo.sig2_value = TryteToIntValue(subbytes(b_trytes,tinfo.offset+2673+2268,tinfo.offset+2673+2279));
 
-                require (compareStrings(tinfo.s_address, tinfo.sig2_address),"2nd signature has invalid address"); // there must be at least one more transaction
-                require (tinfo.sig2_value==0,"2nd signature is not 0 value");
+        //         require (compareStrings(tinfo.s_address, tinfo.sig2_address),"2nd signature has invalid address"); // there must be at least one more transaction
+        //         require (tinfo.sig2_value==0,"2nd signature is not 0 value");
 
-                tinfo.sigA = substring(transactiondata,tinfo.offset+0,tinfo.offset+2187);
-                tinfo.sigB = substring(transactiondata,tinfo.offset+2673,tinfo.offset+2673+2187);
+        //         tinfo.sigA = substring(transactiondata,tinfo.offset+0,tinfo.offset+2187);
+        //         tinfo.sigB = substring(transactiondata,tinfo.offset+2673,tinfo.offset+2673+2187);
 
-                // Validate Signature
-                require( CurlValidateSignature(tinfo.s_address,
-                                              concat(tinfo.sigA,tinfo.sigB),
-                                               s_bundle),
-                                               "INVALID SIGNATURE");
-                //
-                spent_addresses[keccak256(bytes(tinfo.sig2_address))] = true;
-            }
+        //         // Validate Signature
+        //         require( CurlValidateSignature(tinfo.s_address,
+        //                                       concat(tinfo.sigA,tinfo.sigB),
+        //                                        s_bundle),
+        //                                        "INVALID SIGNATURE");
+        //         //
+        //         spent_addresses[keccak256(bytes(tinfo.sig2_address))] = true;
+        //     }
 
-            emit EventLogInt(tinfo.s_address, tinfo.transactionValue);
+        //     emit EventLogInt(tinfo.s_address, tinfo.transactionValue);
 
-            //log for faster retrieval later, also used by "find_transactions"
-            bytes32 bundleSHA3 = keccak256(tinfo.b_bundle);
-            bytes32 addressSHA3 = keccak256(bytes(tinfo.s_address));
+        //     //log for faster retrieval later, also used by "find_transactions"
+        //     bytes32 bundleSHA3 = keccak256(tinfo.b_bundle);
+        //     bytes32 addressSHA3 = keccak256(bytes(tinfo.s_address));
 
-            emit transactions_by_bundle(bundleSHA3, tinfo.transactionSHA3); // logs transactions per bundle, tighly packed bytes32 keccak hashes of transactions
-            emit transactions_by_address(addressSHA3, tinfo.transactionSHA3); // logs transactions per address, tighly packed bytes32 keccak hashes of transactions
+        //     emit transactions_by_bundle(bundleSHA3, tinfo.transactionSHA3); // logs transactions per bundle, tighly packed bytes32 keccak hashes of transactions
+        //     emit transactions_by_address(addressSHA3, tinfo.transactionSHA3); // logs transactions per address, tighly packed bytes32 keccak hashes of transactions
 
-            // we also log in contract data, not just events, as that is faster for retrieval, and allows fast sync. Cost more storage though,
-            // but you know... the things we accept for better performance...
-            StoreTransactionsByAddress(addressSHA3, tinfo.transactionSHA3);
-            StoreTransactionsByBundle(bundleSHA3, tinfo.transactionSHA3);
+        //     // we also log in contract data, not just events, as that is faster for retrieval, and allows fast sync. Cost more storage though,
+        //     // but you know... the things we accept for better performance...
+        //     StoreTransactionsByAddress(addressSHA3, tinfo.transactionSHA3);
+        //     StoreTransactionsByBundle(bundleSHA3, tinfo.transactionSHA3);
 
 
-        } // END LOOP THROUGH ALL TRANSACTIONS
+        // } // END LOOP THROUGH ALL TRANSACTIONS
 
-        // perform further overall checks:
+        // // perform further overall checks:
 
-        // Check trunk/branch strucutre solid
-        // process each transaction hash we have seen in the bundle
-        for (uint32 transaction_idx = 0; transaction_idx < cnt_transactions; transaction_idx++){
-            TransactionInfoStruct memory tcheck;
-            tcheck.transactionSHA3 = tmpSha3TransactionHashes[transaction_idx] ;
-            tcheck.transactionTrunkSHA3 = transaction_trunk[tcheck.transactionSHA3];
-            tcheck.transactionBranchSHA3 = transaction_branch[tcheck.transactionSHA3];
-            require(bytes(transactions[tcheck.transactionTrunkSHA3]).length != 0 ,"TRUNK TRANSACTION DOES NOT EXIST");
-            require(bytes(transactions[tcheck.transactionBranchSHA3]).length != 0 ,"BRANCH TRANSACTION DOES NOT EXIST");
-        }
+        // // Check trunk/branch strucutre solid
+        // // process each transaction hash we have seen in the bundle
+        // for (uint32 transaction_idx = 0; transaction_idx < cnt_transactions; transaction_idx++){
+        //     TransactionInfoStruct memory tcheck;
+        //     tcheck.transactionSHA3 = tmpSha3TransactionHashes[transaction_idx] ;
+        //     tcheck.transactionTrunkSHA3 = transaction_trunk[tcheck.transactionSHA3];
+        //     tcheck.transactionBranchSHA3 = transaction_branch[tcheck.transactionSHA3];
+        //     require(bytes(transactions[tcheck.transactionTrunkSHA3]).length != 0 ,"TRUNK TRANSACTION DOES NOT EXIST");
+        //     require(bytes(transactions[tcheck.transactionBranchSHA3]).length != 0 ,"BRANCH TRANSACTION DOES NOT EXIST");
+        // }
 
-        assert(totalBundleValue==0); // totalBundleValue must be 0 across the bundle;
+        // assert(totalBundleValue==0); // totalBundleValue must be 0 across the bundle;
 
-        // compute and check BUNDLE HASH: calculated bundle hash must match the actual bundle trytes stored in each transaction
+        // // compute and check BUNDLE HASH: calculated bundle hash must match the actual bundle trytes stored in each transaction
 
-        string memory s_hash = CurlHashOP(string(all_essential_parts));
-        require (compareStrings(s_bundle,s_hash),"CALCULATED BUNDLE DIFFERS");
+        // string memory s_hash = CurlHashOP(string(all_essential_parts));
+        // require (compareStrings(s_bundle,s_hash),"CALCULATED BUNDLE DIFFERS");
 
-        // if we are here, the bundle itself is valid. Now we have to check if there are enough balances available on the spending addresses
-        ValidateBalancesAndTransact(transactiondata);
+        // // if we are here, the bundle itself is valid. Now we have to check if there are enough balances available on the spending addresses
+        // ValidateBalancesAndTransact(transactiondata);
 
-        // AND NOW, as the final step, we call ADKTransactionNotify on each receiving Contract
+        // // AND NOW, as the final step, we call ADKTransactionNotify on each receiving Contract
 
-        // Note: this is done last, to prevent reentry hacks, and we use CALL so we dont revert if the
-        // target is not a contract: The low-level functions call, delegatecall and staticcall return true as their first return value if the account called is non-existent, as part of the design of the EVM.
+        // // Note: this is done last, to prevent reentry hacks, and we use CALL so we dont revert if the
+        // // target is not a contract: The low-level functions call, delegatecall and staticcall return true as their first return value if the account called is non-existent, as part of the design of the EVM.
 
-        // note the GAS is limited here to  10000 gas to prevent spam
+        // // note the GAS is limited here to  10000 gas to prevent spam
 
-        for (uint32 transaction_idx = 0; transaction_idx < cnt_transactions; transaction_idx++){
-            TransactionInfoStruct memory tinfo2;
-            tinfo2.offset = transaction_idx * 2673;
-            tinfo2.transactionValue = TryteToIntValue(subbytes(b_trytes,tinfo2.offset+2268,tinfo2.offset+2279));
-            if (tinfo2.transactionValue > 0){// only call for positive transactions
-                tinfo2.s_address = substring(transactiondata,tinfo2.offset+2187,tinfo2.offset+2268);
-                tinfo2.sigA = substring(transactiondata,tinfo2.offset+0,tinfo2.offset+2187);
+        // for (uint32 transaction_idx = 0; transaction_idx < cnt_transactions; transaction_idx++){
+        //     TransactionInfoStruct memory tinfo2;
+        //     tinfo2.offset = transaction_idx * 2673;
+        //     tinfo2.transactionValue = TryteToIntValue(subbytes(b_trytes,tinfo2.offset+2268,tinfo2.offset+2279));
+        //     if (tinfo2.transactionValue > 0){// only call for positive transactions
+        //         tinfo2.s_address = substring(transactiondata,tinfo2.offset+2187,tinfo2.offset+2268);
+        //         tinfo2.sigA = substring(transactiondata,tinfo2.offset+0,tinfo2.offset+2187);
 
-                // the following calls the receiveing contract notification function (if it exists)
-                address _addr = ADKTokenInterface(ADKTokenAddress).AZ9_TO_ADDR(tinfo2.s_address); // get the target address
-                (bool success, bytes memory data) = _addr.call{value: 0, gas: 10000 }(
-                        abi.encodeWithSignature("ADKMeshTransactionNotify(string,int256)", tinfo2.sigA, tinfo2.transactionValue)
-                );
-                require (success, "CALLED CONTRACT (ADKTransactionNotify) REVERTED.");
-            }
-        }
+        //         // the following calls the receiveing contract notification function (if it exists)
+        //         address _addr = ADKTokenInterface(ADKTokenAddress).AZ9_TO_ADDR(tinfo2.s_address); // get the target address
+        //         (bool success, bytes memory data) = _addr.call{value: 0, gas: 10000 }(
+        //                 abi.encodeWithSignature("ADKMeshTransactionNotify(string,int256)", tinfo2.sigA, tinfo2.transactionValue)
+        //         );
+        //         require (success, "CALLED CONTRACT (ADKTransactionNotify) REVERTED.");
+        //     }
+        // }
 
-        mutex_PostTransactions = false; // end reentry check
-        return s_hash; // bundle hash
+        // mutex_PostTransactions = false; // end reentry check
+        // return s_hash; // bundle hash
+         require(false, "function not implemented"); //don't need ERC20 version any more
     }
     //
     // ValidateBalancesAndTransact - internal function that checks balances (sufficient balance) and performs the actual transfer
@@ -302,48 +303,48 @@ contract ADKTransactions {
     bool mutex2 = false;
     function ValidateBalancesAndTransact(string memory transactiondata) internal returns (bool){
 
-        require (!mutex2, "mutex check failed on ValidateBalancesAndTransact");
-        mutex2 = true;
+        // require (!mutex2, "mutex check failed on ValidateBalancesAndTransact");
+        // mutex2 = true;
 
-        //check transaction data once again, and then loop through all transactions.
-        // NOTE: at this point all signatures have already been validated.
+        // //check transaction data once again, and then loop through all transactions.
+        // // NOTE: at this point all signatures have already been validated.
 
-        bytes memory b_trytes = bytes(transactiondata);
-        require(b_trytes.length % 2673 == 0 && b_trytes.length > 0 ,"Invalid transaction(s) length");
-        uint16 cnt_transactions = uint16(b_trytes.length / 2673);
+        // bytes memory b_trytes = bytes(transactiondata);
+        // require(b_trytes.length % 2673 == 0 && b_trytes.length > 0 ,"Invalid transaction(s) length");
+        // uint16 cnt_transactions = uint16(b_trytes.length / 2673);
 
-        int total = 0;
+        // int total = 0;
 
-        // first calculate totals per address (in case the same address appears more than once in the bundle)
-        for (uint32 transaction_idx = 0; transaction_idx < cnt_transactions; transaction_idx++){ // loop through all transactions once
-            uint32 offset = transaction_idx * 2673; // offset of current transaction
-            string memory s_address = substring(transactiondata,uint32(offset+2187),uint32(offset+2268));
-            int value = TryteToIntValue(subbytes(b_trytes,offset+2268,offset+2279));
-            total += value;
-            testBundleBalances[s_address] += value; // store it as temporary virtual balance (this entry was set to 0 initially in PostTransactions() )
-        }
-        assert(total==0); // we did that before already, but doesnt hurt to check again...
+        // // first calculate totals per address (in case the same address appears more than once in the bundle)
+        // for (uint32 transaction_idx = 0; transaction_idx < cnt_transactions; transaction_idx++){ // loop through all transactions once
+        //     uint32 offset = transaction_idx * 2673; // offset of current transaction
+        //     string memory s_address = substring(transactiondata,uint32(offset+2187),uint32(offset+2268));
+        //     int value = TryteToIntValue(subbytes(b_trytes,offset+2268,offset+2279));
+        //     total += value;
+        //     testBundleBalances[s_address] += value; // store it as temporary virtual balance (this entry was set to 0 initially in PostTransactions() )
+        // }
+        // assert(total==0); // we did that before already, but doesnt hurt to check again...
 
-        // now check if actual current TOTAL balance for each SPENDING address is sufficient
-        for (uint32 transaction_idx2 = 0; transaction_idx2 < cnt_transactions; transaction_idx2++){ // loop through all transactions once again, but know we know each address' final total aready
-            uint32 offset = transaction_idx2 * 2673; // offset of current transaction
-            string memory s_address = substring(transactiondata,uint32(offset+2187),uint32(offset+2268));
+        // // now check if actual current TOTAL balance for each SPENDING address is sufficient
+        // for (uint32 transaction_idx2 = 0; transaction_idx2 < cnt_transactions; transaction_idx2++){ // loop through all transactions once again, but know we know each address' final total aready
+        //     uint32 offset = transaction_idx2 * 2673; // offset of current transaction
+        //     string memory s_address = substring(transactiondata,uint32(offset+2187),uint32(offset+2268));
 
-            int availableBalance = int(GetAZ9balanceOf(s_address)); // get this from current ADK balance
+        //     int availableBalance = int(GetAZ9balanceOf(s_address)); // get this from current ADK balance
 
-            // after the bundle values are applied on each address, the new balance must be >= 0
-            require(availableBalance + testBundleBalances[s_address] >= 0, "INSUFFICIENT BALANCE");
+        //     // after the bundle values are applied on each address, the new balance must be >= 0
+        //     require(availableBalance + testBundleBalances[s_address] >= 0, "INSUFFICIENT BALANCE");
 
-            // PERFORM VALUE TRANSACTION. Note: ADKTokenContract.meshTransaction can only be called by this Transfer Contract
-            if (testBundleBalances[s_address]!= 0){ // transaction is positive or negative, thus will update the address balance
-                ADKTokenInterface(ADKTokenAddress).meshTransaction(s_address, testBundleBalances[s_address]);
-            }
+        //     // PERFORM VALUE TRANSACTION. Note: ADKTokenContract.meshTransaction can only be called by this Transfer Contract
+        //     if (testBundleBalances[s_address]!= 0){ // transaction is positive or negative, thus will update the address balance
+        //         ADKTokenInterface(ADKTokenAddress).meshTransaction(s_address, testBundleBalances[s_address]);
+        //     }
 
-            testBundleBalances[s_address] = 0; //  reset to 0 now as we have done the TRANSACTION
-        }
-        mutex2 = false; // end reentry check
-        return true;
-
+        //     testBundleBalances[s_address] = 0; //  reset to 0 now as we have done the TRANSACTION
+        // }
+        // mutex2 = false; // end reentry check
+        // return true;
+        require(false, "function not implemented"); //don't need ERC20 version any more
     }
 
      //
@@ -608,7 +609,7 @@ contract ADKTransactions {
         require (valid, "INVALID TRYTES");
         _;
     }
-
+ 
     // MODIFIERS
 
     modifier onlyGenesis {

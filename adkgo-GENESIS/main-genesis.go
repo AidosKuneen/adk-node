@@ -164,7 +164,7 @@ func main() {
 	   vADKTransactionsAddress, _ = c_ADKToken.ADKTransactionsContract(nil)
 	}
      fmt.Println("Deployed ADKToken Contract as "+vADKTokenAddress.Hex())
-     fmt.Println("Deployed ADKGAS Contract as "+vAGSClaimContract.Hex())
+     fmt.Println("Deployed ADKCLAIM Contract as "+vAGSClaimContract.Hex())
      fmt.Println("Deployed ADKTransactions Contract as "+vADKTransactionsAddress.Hex())
 
      fmt.Println("setting genesis balances from mesh snapshot...")
@@ -179,8 +179,8 @@ func main() {
 	 idx := 0
 
 	 checkTotal := big.NewInt(0)
-	 big_1000000000 := big.NewInt(10)
-	 big_1000000000.Exp(big_1000000000,big.NewInt(9),nil)
+	 big_10000000000 := big.NewInt(10)
+	 big_10000000000.Exp(big_10000000000,big.NewInt(10),nil)
 	
 	 for idx < cntAddrs - cntAddrs % 10 { // bulk
 		addresses_bulk := ""
@@ -190,7 +190,7 @@ func main() {
 		for idx10 := 0; idx10 < 10; idx10++ {
 			addresses_bulk += addresses_as_array[idx]
 			_vals[idx10] = big.NewInt(addressToValueMap[addresses_as_array[idx]])
-			_vals_claim[idx10] = new(big.Int).Mul(_vals[idx10],big_1000000000)  // add 10 zeros to convert to correct AGS, then divide by 10, hecne mul 9 zeros
+			_vals_claim[idx10] = new(big.Int).Mul(_vals[idx10],big_10000000000)  // add 10 zeros to convert to correct AGS
 			fmt.Printf("Bulk Setting (%v/%v): %s %v\n", idx, cntAddrs, addresses_as_array[idx], _vals[idx10])
 			checkTotal.Add(checkTotal, _vals[idx10])
 			idx++
@@ -211,7 +211,7 @@ func main() {
 
 	 for idx < cntAddrs  { // remaining non-bulk
 	    _bigIntVal := big.NewInt(addressToValueMap[addresses_as_array[idx]])
-		_bigIntValClaim := new(big.Int).Mul( _bigIntVal, big_1000000000)  // add 10 zeros to convert to correct AGS, then divide by 10, hecne mul 9 zeros
+		_bigIntValClaim := new(big.Int).Mul( _bigIntVal, big_10000000000)  // add 10 zeros to convert to correct AGS
 			
 		fmt.Printf("Setting (%v/%v): %s %v\n", idx, cntAddrs, addresses_as_array[idx], _bigIntVal)
 		checkTotal.Add(checkTotal, _bigIntVal)

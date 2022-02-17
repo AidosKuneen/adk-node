@@ -5,14 +5,17 @@ import "contracts/AGSClaim.sol";
 
 contract ADKToken {
 
-    // ADKGO Genesis Contract for ADK
+    // ADKGO Genesis Contract for ADK / Migration Contract / Migration Snapshot
     //
     // This contract handles the ERC20 interface as well as the AZ9 total ADK balances
     // 
-    // All tools/clients wanting to interact with ADK via its ERC20 interface will use this contract as the Token Contract
-
+    // The ADKToken Contract is part of the migration engine allowing users to migrate from AZ9 Mesh and ERC20 ADK to the
+    // new native ADK coin
+    //
+    // Note: this contract facilitates a ONE-WAY direction transfer from AZ9 --> ERC20 ADK and then from ERC20 ADK --> Native ADK  
+    //
     uint256 public totalSupply;
-    
+      
     uint256 constant private MAX_UINT256 = 2**256 - 1;
     
     mapping (address => uint256) public balances;      // balances and mesh-balances are always identical, just different representation of the account 
@@ -43,8 +46,10 @@ contract ADKToken {
         name = "ADK"; //_tokenName;                               // Set the name for display purposes
         decimals = 8; //_decimalUnits;                            // Amount of decimals for display purposes (8 for ADK)
         symbol = "\u24B6"; // _tokenSymbol;                       // Set the symbol for display purposes
-        balances[msg.sender] = 2500000000000000;//_initialAmount; // Give the mesh address all initial tokens
-        totalSupply = 2500000000000000;//_initialAmount;          // 2500000000000000 ADK
+        //balances[msg.sender] = 2500000000000000;//_initialAmount; // Give the mesh address all initial tokens
+        //totalSupply = 2500000000000000;//_initialAmount;          // 2500000000000000 ADK
+        balances[msg.sender] = 0;//_initialAmount; // not required any more
+        totalSupply = 0;//_initialAmount;         // not required any more
         
         // prepare the linked list
         linked_list_all_balances[address(ADKTransactionsContract)] = address(ADKTransactionsContract);
@@ -91,49 +96,52 @@ contract ADKToken {
     
     // Standard ERC20 transfer Function
     function transfer(address _to, uint256 _value) public returns (bool success) {
-        require(balances[msg.sender] >= _value);
-        require(address(this) != _to); // prevent accidental send of tokens to the contract itself
-        balances[msg.sender] -= _value;
-        balances[_to] += _value;
+        // require(balances[msg.sender] >= _value);
+        // require(address(this) != _to); // prevent accidental send of tokens to the contract itself
+        // balances[msg.sender] -= _value;
+        // balances[_to] += _value;
         
-        // now we notify the receiving contract (if it exists)
-        // Note: This is to allow other smart contracts to 'react' to receiving ADK token.
+        // // now we notify the receiving contract (if it exists)
+        // // Note: This is to allow other smart contracts to 'react' to receiving ADK token.
         
-        require(notifyReceiver(msg.sender, _to, _value), "CALLED CONTRACT (notifyReceiver) REVERTED EXECUTION.");
+        // require(notifyReceiver(msg.sender, _to, _value), "CALLED CONTRACT (notifyReceiver) REVERTED EXECUTION.");
         
-        UpdateBalanceRing(msg.sender); // update ring of addresses with balances as needed
-        UpdateBalanceRing(_to); // update ring of addresses with balances as needed
+        // UpdateBalanceRing(msg.sender); // update ring of addresses with balances as needed
+        // UpdateBalanceRing(_to); // update ring of addresses with balances as needed
         
-        emit Transfer(msg.sender, _to, _value); //solhint-disable-line indent, no-unused-vars
-        return true;
+        // emit Transfer(msg.sender, _to, _value); //solhint-disable-line indent, no-unused-vars
+        // return true;
+        require(false, "function not implemented"); //don't need ERC20 version any more
     }
 
     // Standard ERC20 transferFrom Function
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        uint256 vallowance = allowed[_from][msg.sender];
-        require(balances[_from] >= _value && vallowance >= _value);
-        balances[_to] += _value;
-        balances[_from] -= _value;
-        if (vallowance < MAX_UINT256) {
-            allowed[_from][msg.sender] -= _value;
-        }
-        // now we notify the receiving contract (if it exists)
-        // Note: This is to allow other smart contracts to 'react' to receiving ADK token.
+        // uint256 vallowance = allowed[_from][msg.sender];
+        // require(balances[_from] >= _value && vallowance >= _value);
+        // balances[_to] += _value;
+        // balances[_from] -= _value;
+        // if (vallowance < MAX_UINT256) {
+        //     allowed[_from][msg.sender] -= _value;
+        // }
+        // // now we notify the receiving contract (if it exists)
+        // // Note: This is to allow other smart contracts to 'react' to receiving ADK token.
        
-        require(notifyReceiver(_from, _to, _value), "CALLED CONTRACT (notifyReceiver) REVERTED.");
+        // require(notifyReceiver(_from, _to, _value), "CALLED CONTRACT (notifyReceiver) REVERTED.");
         
-        UpdateBalanceRing(msg.sender); // update ring of addresses with balances as needed
-        UpdateBalanceRing(_to); // update ring of addresses with balances as needed
+        // UpdateBalanceRing(msg.sender); // update ring of addresses with balances as needed
+        // UpdateBalanceRing(_to); // update ring of addresses with balances as needed
         
-        emit Transfer(_from, _to, _value); //solhint-disable-line indent, no-unused-vars
-        return true;
+        // emit Transfer(_from, _to, _value); //solhint-disable-line indent, no-unused-vars
+        // return true;
+         require(false, "function not implemented"); //don't need ERC20 version any more
     }
     
     // Standard ERC20 approve Function
     function approve(address _spender, uint256 _value) public returns (bool success) {
-        allowed[msg.sender][_spender] = _value;
-        emit Approval(msg.sender, _spender, _value); //solhint-disable-line indent, no-unused-vars
-        return true;
+        // allowed[msg.sender][_spender] = _value;
+        // emit Approval(msg.sender, _spender, _value); //solhint-disable-line indent, no-unused-vars
+        // return true;
+         require(false, "function not implemented"); //don't need ERC20 version any more
     }
 
     // Standard ERC20 balanceOf Function
