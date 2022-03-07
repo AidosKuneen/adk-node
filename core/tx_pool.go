@@ -34,6 +34,7 @@ import (
 	"github.com/aidoskuneen/adk-node/metrics"
 	"github.com/aidoskuneen/adk-node/params"
 	"github.com/AidosKuneen/gadk"
+	"crypto/sha1"
 	"strings"
 )
 
@@ -652,20 +653,14 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		 return nil // OK
 	}
 
-	// API Account allowed to use 0 price GAS if contract is the Mesh Contract
+	// Transactions allowed to use 0 price GAS if target is the ADK Migration Contract
 	if (tx.To() != nil) && (tx.Data() != nil) {
-		 // target is mesh contract or AGS claim contract and caller is the generic API account and
-		 // function call is postTransactions
-		 // and data has PoW completed
-
 		 //    "7fa5e242": "PostTransactions(string)",
-
 		 postTransactionsFunctionHash := []byte("\x7f\xa5\xe2\x42")
-
-		 if (  ( bytes.Compare(tx.To().Bytes(),common.HexToAddress(params.TxAGSClaimContract).Bytes()) == 0 || bytes.Compare(tx.To().Bytes(),common.HexToAddress(params.TxADKMeshContract).Bytes()) == 0 ) &&
-		 		bytes.Compare(from.Bytes(),common.HexToAddress(params.TxAPIAccount).Bytes()) == 0 &&
-				len(tx.Data()) > 4 &&
-				bytes.Compare(postTransactionsFunctionHash,tx.Data()[0:4]) == 0 ){
+		 if (  ( bytes.Compare(tx.To().Bytes(),common.HexToAddress(params.TxAGSClaimContract).Bytes()) == 0 ) &&
+		 		     bytes.Compare(from.Bytes(),common.HexToAddress(params.TxAPIAccount).Bytes()) == 0 &&
+						 len(tx.Data()) > 4 &&
+						 bytes.Compare(postTransactionsFunctionHash,tx.Data()[0:4]) == 0 ){
 				// OK, someone called the PostTransaction function using the generic APIAccount
 				// now check if PoW is done.
 				data := tx.Data()[68:] // note: function only has one string param, and string is all non-0 bytes (so we ignore trailing 0s)
@@ -714,12 +709,34 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		 }
 	}
 
+	// Transactions ALSO allowed to use 0 price GAS if PoW has been done
+	var zro * big.Int
+	zro.SetUint64(0)
+	if ( tx.GasPrice().Cmp(zro) == 0 ){ // trying to send with 0 GAS, so check if PoW is done
+		tx.Hash().Bytes()
+			PoWHash := Sha256Bytes2Bytes(tx.Hash().Bytes())
+				//
+			if (PoWHash[0]==0 &&
+					PoWHash[1]==0 &&
+					PoWHash[2] < 64  ){
+						  return nil //OK
+					} else {
+					    return ErrInsufficientPoW // NOT enough PoW
+					}
+	}
+
 	// otherwise minimum gas price is enforced
 	if ( tx.GasPrice().Cmp(minGasPrice) < 0 ) {
 			return ErrInsufficientGasPrice
 	}
 
 	return nil
+}
+
+func Sha256Bytes2Bytes(data []byte)([]byte){
+    h := sha1.New()
+    h.Write(data)
+    return h.Sum(nil)
 }
 
 var seen_trytes map[string]int64 = make(map[string]int64)

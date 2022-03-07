@@ -59,7 +59,7 @@ func GetAuth(client *ethclient.Client)(*bind.TransactOpts){
        log.Fatal(err)
    }
 
-   chainID := big.NewInt(40271) //40272 is mainnet  //40271 is testnet
+   chainID := big.NewInt(40272) //40272 is mainnet  //40271 is testnet
    auth, _ := bind.NewKeyedTransactorWithChainID(key.PrivateKey,chainID)
    auth.Nonce = big.NewInt(int64(nonce))
    auth.Value = big.NewInt(0)     // in wei
@@ -80,7 +80,7 @@ func GetAuthForContract(client *ethclient.Client)(*bind.TransactOpts){ //
        log.Fatal(err)
    }
 
-   chainID := big.NewInt(40271)  //40272 is mainnet   //40271 is testnet
+   chainID := big.NewInt(40272)  //40272 is mainnet   //40271 is testnet
    auth, _ := bind.NewKeyedTransactorWithChainID(key.PrivateKey,chainID)
    auth.Nonce = big.NewInt(int64(nonce))
    auth.Value = big.NewInt(0)     // in wei

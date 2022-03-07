@@ -31,10 +31,10 @@ const (
 	TxGas                 uint64 = 21000 // Per transaction not creating a contract. NOTE: Not payable on data of calls between transactions.
 	TxGasContractCreation uint64       = 53000 // Per transaction that creates a contract. NOTE: Not payable on data of calls between transactions.
 	//TxContractCreationMinGasPrice uint64 = 1000000000000 // ADKGO requires minimum gas price
-	TxADKMinGasPrice uint64 = 100000000000 // ADKGO requires minimum gas price min 100 GWei
+	TxADKMinGasPrice uint64 = 1000000000000 // ADKGO requires minimum gas price min 1000 GWei
 	TxContractCreationGenesisAccount string = "0xD4F79609f8dc0d23598d9019745446CAA2A93eaa" // ADKGO GENESIS ACCOUNT - account that can do mesh transactions without GAS
 	TxAPIAccount string = "0x2B5f3EC809994eD4549d4305fCf430129Dd96A3D" // ADKGO API ACCOUNT - account that can do mesh transactions without GAS
-	TxADKMeshContract string = "0x533e5eE8429FCFdBe907408F38Ef91a77573CfD1" // ADKGO Mesh Contract
+	TxADKMeshContract string = "0x533e5eE8429FCFdBe907408F38Ef91a77573CfD1" // ADKGO Mesh Contract // OBSOLETE
 	TxAGSClaimContract string = "0xdf61877BaB8B3789A41924fdDB01804cfAED3C55" // AGS Claim Contract
 
 	TxDataZeroGas         uint64 = 4     // Per byte of data attached to a transaction that equals zero. NOTE: Not payable on data of calls between transactions.

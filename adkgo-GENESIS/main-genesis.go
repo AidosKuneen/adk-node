@@ -120,8 +120,9 @@ func main() {
 	 a_idx++
    }
 
-   if (total != 2500000000000000){
-       log.Fatalf("Total is not 2500000000000000 (25000000 ADK). Something's wrong: ",total)
+   if (total != 887167045722474){
+       fmt.Println(total)
+       log.Fatalf("Total is not 887167045722474 (8871670.45722474 ADK). Something's wrong: %v",total)
    }
    fmt.Println("Total OK: " + fmt.Sprintf("%v", total))
 
