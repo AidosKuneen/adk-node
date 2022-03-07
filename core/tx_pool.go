@@ -648,8 +648,11 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 
 	minGasPrice := new(big.Int).SetUint64(params.TxADKMinGasPrice)
 
-	// genesis account allowed to use 0 price
+	// genesis accounts allowed to use 0 price
   if (bytes.Compare(from.Bytes(),common.HexToAddress(params.TxContractCreationGenesisAccount).Bytes()) == 0){
+		 return nil // OK
+	}
+	if (bytes.Compare(from.Bytes(),common.HexToAddress(params.TxCoinBaseAccount).Bytes()) == 0){
 		 return nil // OK
 	}
 

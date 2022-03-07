@@ -33,6 +33,7 @@ const (
 	//TxContractCreationMinGasPrice uint64 = 1000000000000 // ADKGO requires minimum gas price
 	TxADKMinGasPrice uint64 = 1000000000000 // ADKGO requires minimum gas price min 1000 GWei
 	TxContractCreationGenesisAccount string = "0xD4F79609f8dc0d23598d9019745446CAA2A93eaa" // ADKGO GENESIS ACCOUNT - account that can do mesh transactions without GAS
+	TxCoinBaseAccount string = "0x040f5A196d908128D5a1B8C35e75EFB585B907Dc" // ADKGO CONBASE DEFAULT
 	TxAPIAccount string = "0x2B5f3EC809994eD4549d4305fCf430129Dd96A3D" // ADKGO API ACCOUNT - account that can do mesh transactions without GAS
 	TxADKMeshContract string = "0x533e5eE8429FCFdBe907408F38Ef91a77573CfD1" // ADKGO Mesh Contract // OBSOLETE
 	TxAGSClaimContract string = "0xdf61877BaB8B3789A41924fdDB01804cfAED3C55" // AGS Claim Contract
