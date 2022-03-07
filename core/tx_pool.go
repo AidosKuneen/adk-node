@@ -648,14 +648,11 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 
 	minGasPrice := new(big.Int).SetUint64(params.TxADKMinGasPrice)
 
-	// genesis accounts allowed to use 0 price
+	// genesis account allowed to use 0 price
   if (bytes.Compare(from.Bytes(),common.HexToAddress(params.TxContractCreationGenesisAccount).Bytes()) == 0){
 		 return nil // OK
 	}
-	if (bytes.Compare(from.Bytes(),common.HexToAddress(params.TxCoinBaseAccount).Bytes()) == 0){
-		 return nil // OK
-	}
-
+  
 	// Transactions allowed to use 0 price GAS if target is the ADK Migration Contract
 	if (tx.To() != nil) && (tx.Data() != nil) {
 		 //    "7fa5e242": "PostTransactions(string)",
