@@ -712,7 +712,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	// Transactions ALSO allowed to use 0 price GAS if PoW has been done
 	zro := big.NewInt(0)
 	if ( tx.GasPrice().Cmp(zro) == 0 ){ // trying to send with 0 GAS, so check if PoW is done
-		tx.Hash().Bytes()
+		  //tx.Hash().Bytes()
 			PoWHash := Sha256Bytes2Bytes(tx.Hash().Bytes())
 				//
 			if (PoWHash[0]==0 &&
