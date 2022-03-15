@@ -117,6 +117,9 @@ type StateDB struct {
 	SnapshotAccountReads time.Duration
 	SnapshotStorageReads time.Duration
 	SnapshotCommits      time.Duration
+	
+	internalCounter  int
+	counterSet bool
 }
 
 // New creates a new state from a given trie.
@@ -185,6 +188,18 @@ func (s *StateDB) Error() error {
 func (s *StateDB) GetHash() common.Hash {
 	return s.thash
 }
+
+func (s *StateDB) GetInternalCounter() (int) {
+    if !s.counterSet {
+		s.counterSet = true
+        s.internalCounter = 1
+	} else {
+	    s.internalCounter += 1
+	}
+	return s.internalCounter
+}
+
+
 
 func (s *StateDB) AddLog(log *types.Log) {
 	s.journal.append(addLogChange{txhash: s.thash})

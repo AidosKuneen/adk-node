@@ -28,7 +28,9 @@ type StateDB interface {
 	CreateAccount(common.Address)
 
     GetHash() common.Hash
-
+	
+	GetInternalCounter() int
+	
 	SubBalance(common.Address, *big.Int)
 	AddBalance(common.Address, *big.Int)
 	GetBalance(common.Address) *big.Int
