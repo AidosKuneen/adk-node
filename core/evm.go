@@ -18,7 +18,7 @@ package core
 
 import (
 	"math/big"
-
+  "os"
 	"github.com/aidoskuneen/adk-node/common"
 	"github.com/aidoskuneen/adk-node/consensus"
 	"github.com/aidoskuneen/adk-node/core/types"
@@ -116,4 +116,15 @@ func CanTransfer(db vm.StateDB, addr common.Address, amount *big.Int) bool {
 func Transfer(db vm.StateDB, sender, recipient common.Address, amount *big.Int) {
 	db.SubBalance(sender, amount)
 	db.AddBalance(recipient, amount)
+
+	// log all transfers
+	logLine := db.GetHash().Hex() +","+sender.Hex()+","+recipient.Hex()+","+amount.String()
+
+	f, err := os.OpenFile("adk_value_transfer.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return // ignore error
+		}
+		defer f.Close()
+    f.WriteString(logLine+"\n");
+
 }
